@@ -1,17 +1,9 @@
 #!/usr/bin/env python3
-"""Task 2: Hypermedia pagination
+""" Pagination module
 """
-
 import csv
 import math
 from typing import Dict, List, Tuple
-
-
-def index_range(page: int, page_size: int) -> Tuple[int, int]:
-    """Retrieves the index range from a given page and page size.
-    """
-
-    return ((page - 1) * page_size, ((page - 1) * page_size) + page_size)
 
 
 class Server:
@@ -34,27 +26,53 @@ class Server:
         return self.__dataset
 
     def get_page(self, page: int = 1, page_size: int = 10) -> List[List]:
-        """Retrieves a page of data.
+        """ Retrieves dataset for specific page
+            - Args:
+                - page: search page
+                - page_size: size of each page
+            - Return:
+                - list of dataset for specified page
         """
-        assert type(page) == int and type(page_size) == int
+        assert type(page) is int and type(page_size) is int
         assert page > 0 and page_size > 0
         start, end = index_range(page, page_size)
-        data = self.dataset()
-        if start > len(data):
-            return []
-        return data[start:end]
+        dataset = self.dataset()
+        return dataset[start: end]
 
     def get_hyper(self, page: int = 1, page_size: int = 10) -> Dict:
-        """Retrieves information about a page.
+        """ Returns page data plus info to next and prev pages
+            - Args:
+                - page: page to look for information
+                - page_size: size of each page
+            - Return:
+                - dictionary of page_size, page, data, next page,
+                  previous page and total_pages
         """
-        data = self.get_page(page, page_size)
-        start, end = index_range(page, page_size)
-        total_pages = math.ceil(len(self.__dataset) / page_size)
-        return {
-            'page_size': len(data),
-            'page': page,
-            'data': data,
-            'next_page': page + 1 if end < len(self.__dataset) else None,
-            'prev_page': page - 1 if start > 0 else None,
-            'total_pages': total_pages
-        }
+        dataset = self.dataset()
+        total_pages = math.ceil(len(dataset) / page_size)
+        prev_page, next_page = None, None
+        if page < total_pages:
+            next_page = page + 1
+        if page > 1:
+            prev_page = page - 1
+        page_data = self.get_page(page, page_size)
+        response = {'page_size': len(page_data),
+                    'page': page,
+                    'data': page_data,
+                    'next_page': next_page,
+                    'prev_page': prev_page,
+                    'total_pages': total_pages}
+        return response
+
+
+def index_range(page: int, page_size: int) -> Tuple[int, int]:
+    """ Gets start and end indices of dataset
+        - Args:
+            - page: page to look for information
+            - page_size: size of each page
+        - Return:
+            - tuple of start index and end index of each page
+    """
+    start_idx = (page - 1) * page_size
+    end_idx = page * page_size
+    return start_idx, end_idx

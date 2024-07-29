@@ -1,38 +1,39 @@
 #!/usr/bin/env python3
-"""Task 4: MRU Caching.
 """
-from collections import OrderedDict
-
+MRU caching module
+"""
 from base_caching import BaseCaching
+from typing import Any, Optional
 
 
 class MRUCache(BaseCaching):
-    """A class `MRUCache` that inherits
-       from `BaseCaching` and is a caching system
+    """ MRU cache class
     """
-    def __init__(self):
-        """Initializes the cache.
+    def put(self, key: Any, item: Any) -> None:
+        """ Adds data to cache based on LRU policy
+            - Args:
+                - key: new entry's key
+                - item: entry's value
         """
-        super().__init__()
-        self.cache_data = OrderedDict()
-
-    def put(self, key, item):
-        """Adds an item in the cache.
-        """
-        if key is None or item is None:
+        if not key or not item:
             return
-        if key not in self.cache_data:
-            if len(self.cache_data) + 1 > BaseCaching.MAX_ITEMS:
-                mru_key, _ = self.cache_data.popitem(False)
-                print("DISCARD:", mru_key)
-            self.cache_data[key] = item
-            self.cache_data.move_to_end(key, last=False)
-        else:
-            self.cache_data[key] = item
+        new_cache_data = {key: item}
+        if len(self.cache_data) == self.MAX_ITEMS:
+            key_to_remove = list(self.cache_data.keys())[-1]
+            self.cache_data.pop(key_to_remove)
+            print(f'DISCARD: {key_to_remove}')
+        self.cache_data.update(new_cache_data)
 
-    def get(self, key):
-        """Retrieves an item by key.
+    def get(self, key: Any) -> Optional[Any]:
+        """ Gets cache data associated with given key
+            and updates dict in accordance to MRU policy
+            - Args:
+                - key to look for
+            - Return:
+                - value associated with the key
         """
-        if key is not None and key in self.cache_data:
-            self.cache_data.move_to_end(key, last=False)
-        return self.cache_data.get(key, None)
+        cache_item = self.cache_data.get(key)
+        if cache_item:
+            self.cache_data.pop(key)
+            self.cache_data.update({key: cache_item})
+        return cache_item

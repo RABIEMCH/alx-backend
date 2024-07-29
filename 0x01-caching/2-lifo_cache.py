@@ -1,35 +1,36 @@
 #!/usr/bin/env python3
-"""Task 2: LIFO Caching.
 """
-from collections import OrderedDict
-
+LIFO caching module
+"""
 from base_caching import BaseCaching
+from typing import Any, Optional
 
 
 class LIFOCache(BaseCaching):
-    """Represents an object that allows storing and
-    retrieving items from a dictionary with a LIFO
-    removal mechanism when the limit is reached.
+    """ LIFO cache class
     """
-    def __init__(self):
-        """Initializes the cache.
-        """
-        super().__init__()
-        self.cache_data = OrderedDict()
 
-    def put(self, key, item):
-        """Adds an item in the cache.
+    def put(self, key: Any, item: Any) -> None:
+        """ Adds data to cache based on LIFO policy
+            - Args:
+                - key: new entry's key
+                - item: entry's value
         """
-        if key is None or item is None:
+        if not key or not item:
             return
-        if key not in self.cache_data:
-            if len(self.cache_data) + 1 > BaseCaching.MAX_ITEMS:
-                last_key, _ = self.cache_data.popitem(True)
-                print("DISCARD:", last_key)
-        self.cache_data[key] = item
-        self.cache_data.move_to_end(key, last=True)
+        new_cache_data = {key: item}
+        if len(self.cache_data) == self.MAX_ITEMS:
+            cache_keys = list(self.cache_data.keys())
+            key_to_remove = cache_keys[-1]
+            self.cache_data.pop(key_to_remove)
+            print(f'DISCARD: {key_to_remove}')
+        self.cache_data.update(new_cache_data)
 
-    def get(self, key):
-        """Retrieves an item by key.
+    def get(self, key: Any) -> Optional[Any]:
+        """ Gets cache data associated with given key
+            - Args:
+                - key to look for
+            - Return:
+                - value associated with the key
         """
-        return self.cache_data.get(key, None)
+        return self.cache_data.get(key)
